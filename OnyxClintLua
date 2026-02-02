@@ -1,0 +1,1 @@
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Onyx-Clint/OnyxClint/307ed184407eb162d83cb0a152dbcefc3dafc040/OnyxClint.lua"))()
