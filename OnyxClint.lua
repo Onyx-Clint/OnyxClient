@@ -1,5 +1,5 @@
 -- =====================================================
--- ONYX KEY SYSTEM (SINGLE KEY)
+-- ONYX KEY SYSTEM (SINGLE KEY + GET KEY BUTTON)
 -- =====================================================
 
 local Players = game:GetService("Players")
@@ -63,6 +63,17 @@ btnK.TextColor3 = Color3.new(1,1,1)
 btnK.BackgroundColor3 = Color3.fromRGB(40,40,70)
 Instance.new("UICorner", btnK)
 
+-- Get Key Button
+local getKeyBtn = Instance.new("TextButton", frameK)
+getKeyBtn.Size = UDim2.fromOffset(260,36)
+getKeyBtn.Position = UDim2.fromOffset(30,160)
+getKeyBtn.Text = "GET KEY"
+getKeyBtn.Font = Enum.Font.GothamBold
+getKeyBtn.TextSize = 14
+getKeyBtn.TextColor3 = Color3.new(1,1,1)
+getKeyBtn.BackgroundColor3 = Color3.fromRGB(50,20,90)
+Instance.new("UICorner", getKeyBtn)
+
 -- Unlock Funktion
 btnK.MouseButton1Click:Connect(function()
 	if boxK.Text == MASTER_KEY then
@@ -71,6 +82,37 @@ btnK.MouseButton1Click:Connect(function()
 	else
 		player:Kick("Falscher Key eingegeben!")
 	end
+end)
+
+-- Get Key Funktion
+getKeyBtn.MouseButton1Click:Connect(function()
+	local link = "https://link-hub.net/3243226/RrrLCDA8vw7r" -- hier deinen Link einfügen
+
+	-- Link in die Zwischenablage kopieren
+	pcall(function()
+		setclipboard(link)
+	end)
+
+	-- Popup erstellen
+	local popup = Instance.new("Frame", keyGui)
+	popup.Size = UDim2.fromOffset(200,50)
+	popup.Position = UDim2.fromScale(0.5,0.3)
+	popup.AnchorPoint = Vector2.new(0.5,0.5)
+	popup.BackgroundColor3 = Color3.fromRGB(30,30,50)
+	Instance.new("UICorner", popup)
+
+	local text = Instance.new("TextLabel", popup)
+	text.Size = UDim2.fromScale(1,1)
+	text.BackgroundTransparency = 1
+	text.TextColor3 = Color3.new(1,1,1)
+	text.Font = Enum.Font.GothamBold
+	text.TextSize = 16
+	text.Text = "Link kopiert!"
+
+	-- Popup nach 2 Sekunden entfernen
+	task.delay(2, function()
+		popup:Destroy()
+	end)
 end)
 
 -- Warten bis Key freigeschaltet
