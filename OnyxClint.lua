@@ -1,5 +1,5 @@
 -- =====================================================
--- ONYX KEY SYSTEM (SINGLE KEY + GET KEY BUTTON)
+-- ONYX KEY SYSTEM (SINGLE KEY)
 -- =====================================================
 
 local Players = game:GetService("Players")
@@ -63,17 +63,6 @@ btnK.TextColor3 = Color3.new(1,1,1)
 btnK.BackgroundColor3 = Color3.fromRGB(40,40,70)
 Instance.new("UICorner", btnK)
 
--- Get Key Button
-local getKeyBtn = Instance.new("TextButton", frameK)
-getKeyBtn.Size = UDim2.fromOffset(260,36)
-getKeyBtn.Position = UDim2.fromOffset(30,160)
-getKeyBtn.Text = "GET KEY"
-getKeyBtn.Font = Enum.Font.GothamBold
-getKeyBtn.TextSize = 14
-getKeyBtn.TextColor3 = Color3.new(1,1,1)
-getKeyBtn.BackgroundColor3 = Color3.fromRGB(50,20,90)
-Instance.new("UICorner", getKeyBtn)
-
 -- Unlock Funktion
 btnK.MouseButton1Click:Connect(function()
 	if boxK.Text == MASTER_KEY then
@@ -84,39 +73,92 @@ btnK.MouseButton1Click:Connect(function()
 	end
 end)
 
--- Get Key Funktion
-getKeyBtn.MouseButton1Click:Connect(function()
-	local link = "https://link-hub.net/3243226/RrrLCDA8vw7r" -- hier deinen Link einfügen
+-- Warten bis Key freigeschaltet
+repeat task.wait() until unlocked
 
-	-- Link in die Zwischenablage kopieren
-	pcall(function()
-		setclipboard(link)
-	end)
 
-	-- Popup erstellen
-	local popup = Instance.new("Frame", keyGui)
-	popup.Size = UDim2.fromOffset(200,50)
-	popup.Position = UDim2.fromScale(0.5,0.3)
-	popup.AnchorPoint = Vector2.new(0.5,0.5)
-	popup.BackgroundColor3 = Color3.fromRGB(30,30,50)
-	Instance.new("UICorner", popup)
+-- =====================================================
+-- GALAXY INTRO ANIMATION (2s, kleiner BG)
+-- =====================================================
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local gui = Instance.new("ScreenGui", player.PlayerGui)
+gui.Name = "GALAXY_INTRO"
+gui.ResetOnSpawn = false
 
-	local text = Instance.new("TextLabel", popup)
-	text.Size = UDim2.fromScale(1,1)
-	text.BackgroundTransparency = 1
-	text.TextColor3 = Color3.new(1,1,1)
-	text.Font = Enum.Font.GothamBold
-	text.TextSize = 16
-	text.Text = "Link kopiert!"
+-- Text Label (mittig)
+local text = Instance.new("TextLabel", gui)
+text.Size = UDim2.fromOffset(300,100) -- Textfeld etwas kleiner
+text.Position = UDim2.fromScale(0.5,0.5)
+text.AnchorPoint = Vector2.new(0.5,0.5)
+text.BackgroundTransparency = 1
+text.Font = Enum.Font.GothamBlack
+text.TextSize = 40
+text.Text = "Hello!"
+text.TextColor3 = Color3.fromRGB(255,255,255)
+text.TextStrokeTransparency = 0
+text.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+text.TextScaled = true
+text.RichText = true
+text.TextTransparency = 1 -- Start unsichtbar
 
-	-- Popup nach 2 Sekunden entfernen
-	task.delay(2, function()
-		popup:Destroy()
+-- Hintergrund Frame (nur etwas größer als Text)
+local padding = 20
+local bg = Instance.new("Frame", gui)
+bg.Size = UDim2.fromOffset(text.Size.X.Offset + padding, text.Size.Y.Offset + padding)
+bg.Position = text.Position
+bg.AnchorPoint = Vector2.new(0.5,0.5)
+bg.BackgroundColor3 = Color3.fromRGB(0,0,0)
+bg.BackgroundTransparency = 0
+Instance.new("UICorner", bg) -- abgerundete Ecken
+
+-- Galaxy Effekt (UIGradient) auf Text
+local grad = Instance.new("UIGradient", text)
+grad.Color = ColorSequence.new{
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(170,0,255)),
+	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0,255,255)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(255,0,255))
+}
+grad.Rotation = 0
+
+-- TweenService
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+-- Fade In Tween (0.5s)
+local fadeInText = TweenService:Create(text, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {TextTransparency = 0})
+local fadeInBG = TweenService:Create(bg, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 0.3})
+fadeInText:Play()
+fadeInBG:Play()
+
+-- Rotate Gradient während Animation
+local startTime = tick()
+local conn
+conn = RunService.RenderStepped:Connect(function()
+	local t = tick() - startTime
+	grad.Rotation = (t*180) % 360
+end)
+
+-- Fade Out Tween nach 1.5s (damit alles in 2s fertig)
+task.delay(1.5, function()
+	local fadeOutText = TweenService:Create(text, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {TextTransparency = 1})
+	local fadeOutBG = TweenService:Create(bg, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {BackgroundTransparency = 1})
+	fadeOutText:Play()
+	fadeOutBG:Play()
+	task.delay(0.5, function()
+		conn:Disconnect()
+		gui:Destroy()
 	end)
 end)
 
 -- Warten bis Key freigeschaltet
 repeat task.wait() until unlocked
+
+-- Warten 2 Sekunden nach Key-Eingabe
+task.wait(2)
+
+-- Ab hier startet dann der Rest deines Scripts
+
 
 -- =====================================================
 -- ONYX CLINT – GODMODE FIXED + GUI BIND UPGRADE
