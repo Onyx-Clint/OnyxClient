@@ -1,17 +1,25 @@
 -- =====================================================
--- ONYX KEY SYSTEM (SINGLE KEY + GET KEY BUTTON)
+-- ONYX KEY SYSTEM (LOCAL + XENO HTTP)
 -- =====================================================
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
+local HttpService = game:GetService("HttpService")
 
-local MASTER_KEY = "ONYX-7GHT-92JK" -- <<< EINZIGER KEY
 local unlocked = false
 
+-- Executor HTTP check (Xeno compatible)
+local request = request or http_request or syn.request
+if not request then
+	warn("HTTP nicht verfügbar – Script abgebrochen")
+	return
+end
+
 -- Key GUI
-local keyGui = Instance.new("ScreenGui", player.PlayerGui)
+local keyGui = Instance.new("ScreenGui")
 keyGui.Name = "ONYX_KEY"
 keyGui.ResetOnSpawn = false
+keyGui.Parent = player:WaitForChild("PlayerGui")
 
 local frameK = Instance.new("Frame", keyGui)
 frameK.Size = UDim2.fromOffset(320,200)
@@ -23,8 +31,8 @@ Instance.new("UICorner", frameK)
 
 local gradK = Instance.new("UIGradient", frameK)
 gradK.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(90,0,150)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(0,140,255))
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(90,0,150)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(0,140,255))
 }
 
 local strokeK = Instance.new("UIStroke", frameK)
@@ -40,7 +48,7 @@ titleK.Font = Enum.Font.GothamBlack
 titleK.TextSize = 22
 titleK.TextColor3 = Color3.new(1,1,1)
 
--- Key Eingabe
+-- Key Input
 local boxK = Instance.new("TextBox", frameK)
 boxK.Size = UDim2.fromOffset(260,36)
 boxK.Position = UDim2.fromOffset(30,70)
@@ -74,24 +82,56 @@ getKeyBtn.TextColor3 = Color3.new(1,1,1)
 getKeyBtn.BackgroundColor3 = Color3.fromRGB(50,20,90)
 Instance.new("UICorner", getKeyBtn)
 
--- Unlock Funktion
+-- API URL
+local API_URL = "https://onyx-webkeys.vercel.app/api/"
+
+-- Unlock Logic (Xeno-safe, no Kick)
 btnK.MouseButton1Click:Connect(function()
-    if boxK.Text == MASTER_KEY then
-        unlocked = true
-        keyGui:Destroy()
-    else
-        player:Kick("Falscher Key eingegeben!")
-    end
+	local inputKey = boxK.Text
+	if inputKey == "" then return end
+
+	local ok, response = pcall(function()
+		return request({
+			Url = API_URL .. inputKey,
+			Method = "GET"
+		})
+	end)
+
+	if not ok or not response then
+		warn("Request failed")
+		return
+	end
+
+	local body = response.Body or response.body or response
+	local successDecode, data = pcall(function()
+		return HttpService:JSONDecode(body)
+	end)
+
+	if not successDecode then
+		warn("JSON decode failed")
+		return
+	end
+
+	if data and data.valid == true then
+		unlocked = true
+		keyGui:Destroy()
+	else
+		warn("Invalid key entered")
+	end
 end)
 
--- Get Key Funktion
+-- =====================================================
+-- Get Key Funktion (unchanged)
+-- =====================================================
 getKeyBtn.MouseButton1Click:Connect(function()
-    local link = "https://link-hub.net/3243226/RrrLCDA8vw7r" -- hier deinen Link einfügen
+	local link = "https://link-hub.net/3243226/RrrLCDA8vw7r" -- hier deinen Link einfügen
 
-    -- Link in die Zwischenablage kopieren
-    pcall(function()
-        setclipboard(link)
-    end)
+	-- Link in die Zwischenablage kopieren
+	pcall(function()
+		setclipboard(link)
+	end)
+end)
+
 
     -- Popup erstellen
     local popup = Instance.new("Frame", keyGui)
@@ -113,7 +153,6 @@ getKeyBtn.MouseButton1Click:Connect(function()
     task.delay(2, function()
         popup:Destroy()
     end)
-end)
 
 -- Warten bis Key freigeschaltet
 repeat task.wait() until unlocked
@@ -206,7 +245,7 @@ task.wait(2)
 
 
 -- =====================================================
--- ONYX CLINT – GODMODE FIXED + GUI BIND UPGRADE
+-- ONYX CLIENT – GODMODE FIXED + GUI BIND UPGRADE
 -- =====================================================
 
 -- SERVICES
@@ -271,7 +310,7 @@ if player.Character then onChar(player.Character) end
 -- GUI
 -- =====================================================
 local gui = Instance.new("ScreenGui", player.PlayerGui)
-gui.Name = "ONYX_CLINT"
+gui.Name = "ONYX_CLIENT"
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame", gui)
@@ -320,7 +359,7 @@ local function button(text,y)
 	return b
 end
 
-label("ONYX CLINT",10,30)
+label("ONYX CLIENT",10,30)
 
 -- Buttons
 local flyBtn = button("Fly ["..binds.Fly.Name.."]",55)
